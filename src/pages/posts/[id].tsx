@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Router, { useRouter } from "next/router";
+import { useRouter } from "next/router";
 
 export interface Post {
   id: number;
@@ -22,13 +22,11 @@ const Post = () => {
 
   useEffect(() => {
     const getPost = async (): Promise<void> => {
-      const res = await fetch(
-        `http://localhost:3000/api/posts/${router.query.id}`
-      );
-      const data = await res.json();
+      const res = await fetch(`/api/posts/${router.query.id as string}`);
+      const data = (await res.json()) as Post;
       setPost(data);
     };
-    getPost();
+    getPost().catch((e) => console.log(e));
   }, [router.query.id]);
 
   return (

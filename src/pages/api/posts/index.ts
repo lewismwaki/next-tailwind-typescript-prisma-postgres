@@ -1,4 +1,5 @@
-import { NextApiResponse, NextApiRequest } from "next";
+import type { Post } from "@prisma/client";
+import type { NextApiResponse, NextApiRequest } from "next";
 import { prisma } from "../../../server/db";
 
 export default async function handler(
@@ -9,11 +10,10 @@ export default async function handler(
 
   if (method === "GET") {
     try {
-      const query = JSON.parse(JSON.stringify(req.query));
-      const where: any = {};
-
-      Object.entries(query).forEach(([key, value]: [string, any]) => {
-        where[key] = JSON.parse(value);
+      type Query = Record<string, string | number | boolean | null | undefined>;
+      const where: Record<string, Query> = {};
+      Object.entries(req.query as Query).forEach(([key, value]) => {
+        where[key] = JSON.parse(value as string) as Query;
       });
 
       const data = await prisma.post.findMany({
@@ -23,13 +23,13 @@ export default async function handler(
       return res.status(200).json(data);
     } catch (error) {
       console.error(error);
-      return res.status(500).json(error);
+      return res.status(500).json({ error: error });
     }
   }
 
   if (method === "POST") {
     try {
-      const data = await prisma.post.create({ data: req.body });
+      const data = await prisma.post.create({ data: req.body as Post });
       return res.status(200).json(data);
     } catch (error) {
       return res.status(200).json(error);
