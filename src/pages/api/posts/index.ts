@@ -1,5 +1,7 @@
-import type { Post } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import type { NextApiResponse, NextApiRequest } from "next";
+import { handleError } from "../../../helpers/handleError";
+import { createPostSchema } from "../../../schema/post";
 import { prisma } from "../../../server/db";
 
 export default async function handler(
@@ -29,10 +31,13 @@ export default async function handler(
 
   if (method === "POST") {
     try {
-      const data = await prisma.post.create({ data: req.body as Post });
+      createPostSchema.parse(req.body as Prisma.PostCreateInput);
+      const data = await prisma.post.create({
+        data: req.body as Prisma.PostCreateInput,
+      });
       return res.status(200).json(data);
     } catch (error) {
-      return res.status(200).json(error);
+      handleError(error, res);
     }
   }
 }
